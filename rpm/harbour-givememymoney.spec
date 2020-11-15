@@ -8,7 +8,7 @@ Name:       harbour-givememymoney
 # >> macros
 # << macros
 
-Summary:    Easy balance shared costs
+Summary:    Easy calculate shared costs
 Version:    0.1
 Release:    1
 Group:      Qt/Qt

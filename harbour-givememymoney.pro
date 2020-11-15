@@ -18,13 +18,15 @@ SOURCES += src/harbour-givememymoney.cpp \
     src/models/qobjectlistmodel.cpp
 
 DISTFILES += qml/harbour-givememymoney.qml \
+    qml/Utils.js \
     qml/components/Object.qml \
     qml/cover/CoverPage.qml \
     qml/pages/BalancesPage.qml \
     qml/pages/ItemsPage.qml \
+    qml/pages/NewBalanceDialog.qml \
+    qml/pages/NewItemDialog.qml \
     qml/store/Balance.qml \
     qml/store/BalanceItem.qml \
-    qml/pages/NewBalance.qml \
     qml/store/Store.qml \
     rpm/harbour-givememymoney.changes.in \
     rpm/harbour-givememymoney.changes.run.in \

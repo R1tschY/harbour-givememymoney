@@ -33,10 +33,23 @@ Object {
         }
     }
 
-    function getItems(balance) {
-        if (balance.items === null) {
-            balance.items = repository.getItems(balance.rowId)
+    function newItem(itemProps) {
+        var itemComp = Qt.createComponent(Qt.resolvedUrl("BalanceItem.qml"))
+        if (itemComp.status === Component.Ready) {
+            return itemComp.createObject(store, itemProps || {})
+        } else {
+            console.error("Failed to create Item component: " + itemComp.errorString())
+            return null
         }
-        return balance.items
+    }
+
+    function addBalance(balance) {
+        balances.append(balance)
+        repository.addBalance(balance)
+    }
+
+    function addItem(balance, item) {
+        balance.items.append(item)
+        repository.addItem(balance, item)
     }
 }

@@ -4,6 +4,7 @@
 #include <QMetaProperty>
 #include <QtDebug>
 
+
 QObjectListModel::QObjectListModel(QObject *parent)
     : QAbstractListModel(parent)
 {
@@ -34,16 +35,15 @@ QVariant QObjectListModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     int row = index.row();
-
     if (row < 0 || row >= m_list.size()) {
         return QVariant();
     }
 
-    if (role == Qt::UserRole) {
+    if (role == ModelDataRole) {
         return QVariant::fromValue(m_list[row]);
     }
 
-    int propIndex = role - Qt::UserRole - 1;
+    int propIndex = role - FirstPropertyRole;
     if (propIndex < 0 || propIndex >= m_roleNames.size()) {
         return QVariant();
     }
@@ -66,15 +66,20 @@ void QObjectListModel::append(QObject *obj)
     beginInsertRows({}, m_list.size(), m_list.size());
     m_list.append(obj);
 
-    for (int i = 0; i < m_meta->propertyCount(); ++i) {
-        QMetaProperty property = m_meta->property(i);
-        QMetaMethod signal = property.notifySignal();
-        if (signal.isValid()) {
-            connect(obj, signal, this, m_onItemChanged);
+    if (false) {
+        for (int i = 0; i < m_meta->propertyCount(); ++i) {
+            QMetaProperty property = m_meta->property(i);
+            QMetaMethod signal = property.notifySignal();
+            if (signal.isValid()) {
+                connect(obj, signal, this, m_onItemChanged);
+            }
         }
     }
 
     endInsertRows();
+
+    emit listChanged();
+    emit countChanged(m_list.size());
 }
 
 void QObjectListModel::extend(QVariantList list)
@@ -91,16 +96,22 @@ void QObjectListModel::extend(QVariantList list)
     for (const auto& elem : list) {
         QObject* obj = qvariant_cast<QObject*>(elem);
         m_list.append(obj);
-        for (int i = 0; i < m_meta->propertyCount(); ++i) {
-            QMetaProperty property = m_meta->property(i);
-            QMetaMethod signal = property.notifySignal();
-            if (signal.isValid()) {
-                connect(obj, signal, this, m_onItemChanged);
+
+        if (false) {
+            for (int i = 0; i < m_meta->propertyCount(); ++i) {
+                QMetaProperty property = m_meta->property(i);
+                QMetaMethod signal = property.notifySignal();
+                if (signal.isValid()) {
+                    connect(obj, signal, this, m_onItemChanged);
+                }
             }
         }
     }
 
     endInsertRows();
+
+    emit listChanged();
+    emit countChanged(m_list.size());
 }
 
 void QObjectListModel::remove(QObject *obj)
@@ -114,6 +125,58 @@ void QObjectListModel::remove(QObject *obj)
     m_list.removeAt(idx);
     obj->disconnect(this);
     endRemoveRows();
+
+    emit listChanged();
+}
+
+void QObjectListModel::clear()
+{
+    if (m_list.isEmpty())
+        return;
+
+    beginRemoveRows({}, 0, m_list.size() - 1);
+    m_list.clear();
+    endRemoveRows();
+
+    emit listChanged();
+}
+
+QObject *QObjectListModel::get(int index) const
+{
+    return m_list.value(index);
+}
+
+QVariantList QObjectListModel::roleValues(const QString& roleName) const
+{
+    QVariantList result;
+    result.reserve(m_list.size());
+
+    if (m_meta == nullptr) {
+        return result;
+    }
+
+    int role = m_roleNames.key(roleName.toLatin1());
+    if (role == 0) {
+        qDebug() << "Unknown role " << roleName;
+        return result;
+    }
+
+    if (role == ModelDataRole) {
+        for (QObject* obj : m_list) {
+            result.append(QVariant::fromValue(obj));
+        }
+    } else {
+        int propIndex = role - FirstPropertyRole;
+        if (propIndex >= 0 && propIndex < m_roleNames.size()) {
+            auto property = m_meta->property(propIndex);
+            for (QObject* obj : m_list) {
+                result.append(property.read(obj));
+            }
+        }
+    }
+
+    return result;
+
 }
 
 void QObjectListModel::onItemChanged()
@@ -129,7 +192,8 @@ void QObjectListModel::onItemChanged()
     }
 
     QModelIndex i = index(idx);
-    dataChanged(i, i);
+    emit dataChanged(i, i);
+    emit listChanged();
 }
 
 void QObjectListModel::lazyInit(QObject* obj)
@@ -138,11 +202,11 @@ void QObjectListModel::lazyInit(QObject* obj)
 
     beginResetModel();
 
-    roles.insert(Qt::UserRole, "modelData");
+    roles.insert(ModelDataRole, "modelData");
     const QMetaObject* metaObject = obj->metaObject();
     for (int i = 0; i < metaObject->propertyCount(); ++i) {
         QMetaProperty property = metaObject->property(i);
-        roles.insert(Qt::UserRole + 1 + i, property.name());
+        roles.insert(FirstPropertyRole + i, property.name());
     }
 
     m_meta = metaObject;

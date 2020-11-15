@@ -22,11 +22,9 @@ import "../components"
 Dialog {
     id: page
 
-    property alias description: descriptionField.text
-
     allowedOrientations: Orientation.All
 
-    canAccept: !!description
+    canAccept: !!descriptionField.text
 
     SilicaFlickable {
         anchors.fill: parent
@@ -46,5 +44,9 @@ Dialog {
                 focus: true
             }
         }
+    }
+
+    function getProps() {
+        return { "description": descriptionField.text }
     }
 }

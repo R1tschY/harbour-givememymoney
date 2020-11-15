@@ -22,18 +22,33 @@
 <context>
     <name>ItemsPage</name>
     <message>
-        <source>Nested Page</source>
-        <translation type="unfinished">Unterseite</translation>
-    </message>
-    <message>
-        <source>Item</source>
-        <translation type="unfinished">Element</translation>
+        <source>New item</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>NewBalance</name>
+    <name>NewBalanceDialog</name>
     <message>
         <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NewItemDialog</name>
+    <message>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Description Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Amount Label</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

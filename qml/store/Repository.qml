@@ -70,32 +70,33 @@ QtObject {
         var result = []
         for (var i = 0; i < rows.length; i++) {
             var row = rows.item(i)
-            result.push(balanceComp.createObject(repo, {
+            var balance = balanceComp.createObject(repo, {
                 rowId: row.rowid,
                 description: row.description
-            }))
+            })
+            balance.items.extend(getItems(row.rowid))
+            result.push(balance)
         }
         return result
     }
 
-    function addItem(item) {
-        var id = null
+    function addItem(balance, item) {
+        var result = null
         _db.transaction(function(tx) {
-            var result = tx.executeSql(
+            result = tx.executeSql(
                 'INSERT INTO items (balance_id, amount, description, person_id, share)'
                         + ' VALUES (?, ?, ?, ?, ?)',
-                [item.balance_id, item.amount, item.description, item.person_id, item.share])
-            id = result.insertId
+                [balance.rowId, item.amount, item.description, item.personId, item.share])
         })
-        balance.rowId = id
+        item.rowId = result.insertId
     }
 
     function saveItem(item) {
         _db.transaction(function(tx) {
             tx.executeSql(
-                'UPDATE balances SET balance_id = ?, amount = ?, description = ?, person_id = ?, share = ? WHERE rowid = ?',
-                [item.balance_id, item.amount, item.description, item.person_id, item.share,
-                 item.rowId])
+                'UPDATE balances SET amount = ?, description = ?, person_id = ?, share = ?'
+                        + ' WHERE rowid = ?',
+                [item.amount, item.description, item.personId, item.share, item.rowId])
         })
     }
 
